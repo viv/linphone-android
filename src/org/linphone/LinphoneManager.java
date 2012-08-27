@@ -474,7 +474,6 @@ public final class LinphoneManager implements LinphoneCoreListener {
 			
 			mLc = LinphoneCoreFactory.instance().createLinphoneCore(
 					this, mLinphoneConfigFile, mLinphoneInitialConfigFile, null);
-
 			mLc.enableIpv6(getPrefBoolean(R.string.pref_ipv6_key, false));
 			mLc.setZrtpSecretsCache(basePath+"/zrtp_secrets");
 
@@ -639,6 +638,9 @@ public final class LinphoneManager implements LinphoneCoreListener {
 
 		LinphoneCoreFactory.instance().setDebugMode(getPrefBoolean(R.string.pref_debug_key,true));
 		initFromConfTunnel();
+		if (!getPrefBoolean("pref_video_user_agent", true)) {
+			mLc.setUserAgent("Guillaume", "0.25");
+		}
 
 		if (initialTransports == null)
 			initialTransports = mLc.getSignalingTransportPorts();
