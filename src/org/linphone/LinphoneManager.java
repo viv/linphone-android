@@ -618,7 +618,10 @@ public final class LinphoneManager implements LinphoneCoreListener {
 				}
 				LinphoneProxyConfig proxycon = LinphoneCoreFactory.instance().createProxyConfig(identity, proxy, null, true);
 				mLc.addProxyConfig(proxycon);
-				
+
+				// Define a short expire to workaround Nortel 10 contact limitation
+				proxycon.setExpires(600);
+
 				//outbound proxy
 				if (getPrefBoolean(getString(R.string.pref_enable_outbound_proxy_key) + key, false)) {
 					proxycon.setRoute(proxy);
