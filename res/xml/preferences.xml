@@ -139,7 +139,7 @@
 
 
 	<PreferenceCategory android:title="@string/pref_advanced">
-	    <CheckBoxPreference android:key="pref_video_user_agent" android:title="Video user agent" />
+	    <CheckBoxPreference android:key="pref_video_user_agent" android:title="Video user agent" android:defaultValue="true"/>
 	    
 		<EditTextPreference android:title="@string/pref_prefix"
 			android:key="@string/pref_prefix_key"></EditTextPreference>

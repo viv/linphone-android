@@ -150,7 +150,9 @@ public class StatusFragment extends Fragment {
 			@Override
 			public void run() {
 				statusLed.setImageResource(getStatusIconResource(state, true));
-				statusText.setText(getStatusIconText(state));
+				boolean videoClient=PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext())
+				.getBoolean("pref_video_user_agent", true);
+				statusText.setText((videoClient ? "V " : "A ") +getStatusIconText(state));
 //				setMiniLedsForEachAccount();
 			}
 		});

@@ -160,7 +160,7 @@ public class PreferencesActivity extends LinphonePreferencesActivity implements 
 				return false;
 			}
 		});
-		
+		/*
 		for (LinphoneProxyConfig lpc : LinphoneManager.getLc().getProxyConfigList()) {
 			if (lpc.getIdentity().contains(prefs.getString(keyUsername, "")) && lpc.getIdentity().contains(prefs.getString(keyDomain, ""))) {
 				while ((lpc.getState() == RegistrationState.RegistrationProgress || lpc.getState() == RegistrationState.RegistrationNone) && (LinphoneManager.getLc().isNetworkReachable()))
@@ -172,7 +172,7 @@ public class PreferencesActivity extends LinphonePreferencesActivity implements 
 					me.setWidgetLayoutResource(R.layout.preference_led_not_connected);
 				}
 			}
-		}
+		}*/
 		
 		parent.addPreference(me);
 	}

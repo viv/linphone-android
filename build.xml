@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Linphone" default="debug">
+<project name="LinphoneUseragent" default="debug">
     <!--
         This build file is imported by the project build file. It contains
         all the targets and tasks necessary to build Android projects, be they
@@ -38,7 +38,7 @@
     <property file="ant.properties" />
     <loadproperties srcFile="project.properties" />
     <!-- version-tag: custom -->
-    <property name="linphone.package.name" value="org.linphone" />
+    <property name="linphone.package.name" value="net.axtellabs.useragent" />
     
     <property name="adb.device.arg" value="" />
 
