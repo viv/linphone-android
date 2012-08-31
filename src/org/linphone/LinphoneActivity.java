@@ -68,6 +68,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author Sylvain Berfini
@@ -580,6 +581,14 @@ public class LinphoneActivity extends FragmentActivity implements OnClickListene
 		});
 	}
 
+	private void toast(final String text) {
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
 	@Override
 	public void onCallStateChanged(LinphoneCall call, State state, String message) {
 		if (state == State.IncomingReceived) {
@@ -591,7 +600,10 @@ public class LinphoneActivity extends FragmentActivity implements OnClickListene
 				startIncallActivity(call);
 			}
 		} else if (state == State.CallEnd || state == State.Error || state == State.CallReleased) {
+			toast(message);
 			resetClassicMenuLayoutAndGoBackToCallIfStillRunning();
+		} else {
+			toast(message);
 		}
 		
 		int missedCalls = LinphoneManager.getLc().getMissedCallsCount();
