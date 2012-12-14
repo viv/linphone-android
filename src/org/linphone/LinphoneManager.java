@@ -224,8 +224,10 @@ public final class LinphoneManager implements LinphoneCoreListener {
 
 	public synchronized static final LinphoneManager createAndStart(
 			Context c, LinphoneServiceListener listener) {
-		if (instance != null)
-			throw new RuntimeException("Linphone Manager is already initialized");
+		if (instance != null) {
+			//throw new RuntimeException("Linphone Manager is already initialized");
+			instance.doDestroy();
+		}
 
 		instance = new LinphoneManager(c, listener);
 		instance.startLibLinphone(c);
