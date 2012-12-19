@@ -619,29 +619,31 @@ public final class LinphoneManager implements LinphoneCoreListener {
 		LinphoneProxyConfig lDefaultProxyConfig = mLc.getDefaultProxyConfig();
 		String lIdentity = "sip:"+lUserName+"@"+lDomain;
 		try {
-			if (lDefaultProxyConfig == null) {
-				lDefaultProxyConfig = LinphoneCoreFactory.instance().createProxyConfig(lIdentity, lProxy, null,true);
-				if (contactParams != null) {
-					lDefaultProxyConfig.setContactParameters(contactParams);
-				}
-				mLc.addProxyConfig(lDefaultProxyConfig);
-				int defaultAccount = getPrefInt(R.string.pref_default_account, 0);
-				if (defaultAccount == 0 || defaultAccount >= getPrefInt(R.string.pref_extra_accounts, 0)) {
-					//outbound proxy
-					if (getPrefBoolean(R.string.pref_enable_outbound_proxy_key, false)) {
-						lDefaultProxyConfig.setRoute(lProxy);
-					} else {
-						lDefaultProxyConfig.setRoute(null);
+			if (!getPrefBoolean(getString(R.string.pref_disable_account_key), false)) {
+				if (lDefaultProxyConfig == null) {
+					lDefaultProxyConfig = LinphoneCoreFactory.instance().createProxyConfig(lIdentity, lProxy, null,true);
+					if (contactParams != null) {
+						lDefaultProxyConfig.setContactParameters(contactParams);
 					}
-					mLc.setDefaultProxyConfig(lDefaultProxyConfig);
+					mLc.addProxyConfig(lDefaultProxyConfig);
+					int defaultAccount = getPrefInt(R.string.pref_default_account, 0);
+					if (defaultAccount == 0 || defaultAccount >= getPrefInt(R.string.pref_extra_accounts, 0)) {
+						//outbound proxy
+						if (getPrefBoolean(R.string.pref_enable_outbound_proxy_key, false)) {
+							lDefaultProxyConfig.setRoute(lProxy);
+						} else {
+							lDefaultProxyConfig.setRoute(null);
+						}
+						mLc.setDefaultProxyConfig(lDefaultProxyConfig);
+					}
+	
+				} else {
+					lDefaultProxyConfig.edit();
+					lDefaultProxyConfig.setIdentity(lIdentity);
+					lDefaultProxyConfig.setProxy(lProxy);
+					lDefaultProxyConfig.enableRegister(true);
+					lDefaultProxyConfig.done();
 				}
-
-			} else {
-				lDefaultProxyConfig.edit();
-				lDefaultProxyConfig.setIdentity(lIdentity);
-				lDefaultProxyConfig.setProxy(lProxy);
-				lDefaultProxyConfig.enableRegister(true);
-				lDefaultProxyConfig.done();
 			}
 
 			// Extra accounts
