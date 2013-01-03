@@ -23,8 +23,8 @@ import java.util.List;
 import org.linphone.LinphoneSimpleListener.LinphoneOnCallStateChangedListener;
 import org.linphone.core.LinphoneAddress;
 import org.linphone.core.LinphoneCall;
-import org.linphone.core.Log;
 import org.linphone.core.LinphoneCall.State;
+import org.linphone.mediastream.Log;
 import org.linphone.ui.SlidingTab;
 import org.linphone.ui.SlidingTab.OnTriggerListener;
 

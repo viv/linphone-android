@@ -36,7 +36,7 @@ import org.linphone.core.LinphoneCall.State;
 import org.linphone.core.LinphoneCallParams;
 import org.linphone.core.LinphoneCore.MediaEncryption;
 import org.linphone.core.LinphoneCoreException;
-import org.linphone.core.Log;
+import org.linphone.mediastream.Log;
 import org.linphone.mediastream.Version;
 import org.linphone.ui.Numpad;
 

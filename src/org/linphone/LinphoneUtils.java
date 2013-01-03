@@ -28,15 +28,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.linphone.core.LinphoneAddress;
 import org.linphone.core.LinphoneCall;
-import org.linphone.core.LinphoneCore;
-import org.linphone.core.Log;
 import org.linphone.core.LinphoneCall.State;
+import org.linphone.core.LinphoneCore;
+import org.linphone.mediastream.Log;
 import org.linphone.mediastream.Version;
 import org.linphone.mediastream.video.capture.hwconf.Hacks;
 

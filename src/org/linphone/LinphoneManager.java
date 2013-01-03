@@ -69,8 +69,8 @@ import org.linphone.core.LinphoneCoreFactory;
 import org.linphone.core.LinphoneCoreListener;
 import org.linphone.core.LinphoneFriend;
 import org.linphone.core.LinphoneProxyConfig;
-import org.linphone.core.Log;
 import org.linphone.core.PayloadType;
+import org.linphone.mediastream.Log;
 import org.linphone.mediastream.Version;
 import org.linphone.mediastream.video.capture.AndroidVideoApi5JniWrapper;
 import org.linphone.mediastream.video.capture.hwconf.AndroidCameraConfiguration;
@@ -415,8 +415,7 @@ public final class LinphoneManager implements LinphoneCoreListener {
 		try {
 			copyAssetsFromPackage();
 			//traces alway start with traces enable to not missed first initialization
-			;
-			LinphoneCoreFactory.instance().setDebugMode(getPrefBoolean(R.string.pref_debug_key,true));
+			LinphoneCoreFactory.instance().setDebugMode(getPrefBoolean(R.string.pref_debug_key,true), getString(R.string.app_name));
 			
 			mLc = LinphoneCoreFactory.instance().createLinphoneCore(
 					this, mLinphoneConfigFile, mLinphoneInitialConfigFile, null);

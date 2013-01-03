@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 
 import org.linphone.LinphoneManager.NewOutgoingCallUiListener;
 import org.linphone.LinphoneSimpleListener.LinphoneServiceListener;
-import org.linphone.compatibility.Compatibility;
 import org.linphone.core.LinphoneCall;
 import org.linphone.core.LinphoneCall.State;
 import org.linphone.core.LinphoneCore;
@@ -33,8 +32,8 @@ import org.linphone.core.LinphoneCore.GlobalState;
 import org.linphone.core.LinphoneCore.RegistrationState;
 import org.linphone.core.LinphoneCoreException;
 import org.linphone.core.LinphoneProxyConfig;
-import org.linphone.core.Log;
 import org.linphone.core.OnlineStatus;
+import org.linphone.mediastream.Log;
 import org.linphone.mediastream.Version;
 
 import android.app.Activity;
@@ -48,7 +47,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;

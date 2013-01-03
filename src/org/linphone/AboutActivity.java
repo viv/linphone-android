@@ -24,7 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.linphone.core.Log;
+import org.linphone.mediastream.Log;
 
 import android.app.Activity;
 import android.content.Intent;

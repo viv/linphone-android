@@ -18,8 +18,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 package org.linphone;
 
-import org.linphone.core.Log;
 import org.linphone.core.LinphoneCore.RegistrationState;
+import org.linphone.mediastream.Log;
 
 import android.app.Activity;
 import android.content.Context;

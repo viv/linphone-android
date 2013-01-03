@@ -20,7 +20,6 @@ package org.linphone;
 
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,7 +28,7 @@ import org.linphone.core.LinphoneAddress;
 import org.linphone.core.LinphoneCallLog;
 import org.linphone.core.LinphoneCore;
 import org.linphone.core.LinphoneProxyConfig;
-import org.linphone.core.Log;
+import org.linphone.mediastream.Log;
 
 import android.app.ListActivity;
 import android.content.Context;
