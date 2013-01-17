@@ -522,7 +522,8 @@ public final class LinphoneManager implements LinphoneCoreListener {
 		if (host == null || host.length() == 0)
 			host = mPref.getString(getString(R.string.pref_tunnel_host_key), "");
 		int port = Integer.parseInt(getPrefString(R.string.pref_tunnel_port_key, "443"));
-		mLc.tunnelAddServerAndMirror(host, port, 12345,500);
+		if (host.length() > 0)
+			mLc.tunnelAddServerAndMirror(host, port, 12345,500);
 		manageTunnelServer(info);
 	}
 	
