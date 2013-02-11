@@ -550,7 +550,7 @@ public class DialerActivity extends Activity implements LinphoneGuiListener {
 		LinphoneCall.State state = call.getState();
 		
 		return state == LinphoneCall.State.Connected ||
-				state == LinphoneCall.State.CallUpdated ||
+				state == LinphoneCall.State.CallUpdating ||
 				state == LinphoneCall.State.CallUpdatedByRemote ||
 				state == LinphoneCall.State.Paused ||
 				state == LinphoneCall.State.PausedByRemote ||
