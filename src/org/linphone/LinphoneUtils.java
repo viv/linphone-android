@@ -21,21 +21,22 @@ package org.linphone;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.linphone.core.LinphoneAddress;
 import org.linphone.core.LinphoneCall;
 import org.linphone.core.LinphoneCall.State;
 import org.linphone.core.LinphoneCore;
+import org.linphone.core.LinphoneCoreFactory;
 import org.linphone.mediastream.Log;
 import org.linphone.mediastream.Version;
 import org.linphone.mediastream.video.capture.hwconf.Hacks;
@@ -68,19 +69,15 @@ public final class LinphoneUtils {
 	private LinphoneUtils(){}
 
 	private static boolean preventVolumeBarToDisplay = false;
-	private static final String sipAddressRegExp = "^(sip:)?(\\+)?[a-z0-9]+([_\\.-][a-z0-9]+)*@([a-z0-9]+([\\.-][a-z0-9]+)*)+\\.[a-z]{2,}(:[0-9]{2,5})?$";
-	private static final String strictSipAddressRegExp = "^sip:(\\+)?[a-z0-9]+([_\\.-][a-z0-9]+)*@([a-z0-9]+([\\.-][a-z0-9]+)*)+\\.[a-z]{2,}$";
+	//private static final String sipAddressRegExp = "^(sip:)?(\\+)?[a-z0-9]+([_\\.-][a-z0-9]+)*@([a-z0-9]+([\\.-][a-z0-9]+)*)+\\.[a-z]{2,}(:[0-9]{2,5})?$";
+	//private static final String strictSipAddressRegExp = "^sip:(\\+)?[a-z0-9]+([_\\.-][a-z0-9]+)*@([a-z0-9]+([\\.-][a-z0-9]+)*)+\\.[a-z]{2,}$";
 
 	public static boolean isSipAddress(String numberOrAddress) {
-		Pattern p = Pattern.compile(sipAddressRegExp);
-		Matcher m = p.matcher(numberOrAddress);
-		return m != null && m.matches();
+		return LinphoneCoreFactory.instance().createLinphoneAddress(numberOrAddress) != null;
 	}
 	
 	public static boolean isStrictSipAddress(String numberOrAddress) {
-		Pattern p = Pattern.compile(strictSipAddressRegExp);
-		Matcher m = p.matcher(numberOrAddress);
-		return m != null && m.matches();
+		return isSipAddress(numberOrAddress) && numberOrAddress.startsWith("sip:");
 	}
 	
 	public static String getUsernameFromAddress(String address) {
@@ -262,7 +259,7 @@ public final class LinphoneUtils {
 		LinphoneCall.State state = call.getState();
 		
 		return state == LinphoneCall.State.Connected ||
-				state == LinphoneCall.State.CallUpdated ||
+				state == LinphoneCall.State.CallUpdating ||
 				state == LinphoneCall.State.CallUpdatedByRemote ||
 				state == LinphoneCall.State.StreamsRunning ||
 				state == LinphoneCall.State.Resuming;
@@ -330,5 +327,42 @@ public final class LinphoneUtils {
             return false;
         }
     }
+	
+	public static void clearLogs() {
+		try {
+			Runtime.getRuntime().exec(new String[] { "logcat", "-c" });
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void collectLogs(String logTag, String email) {
+        BufferedReader br = null;
+        Process p = null;
+        StringBuilder sb = new StringBuilder();
+
+    	try {
+			p = Runtime.getRuntime().exec(new String[] { "logcat", "-d", "|", "grep", "`adb shell ps | grep org.linphone | cut -c10-15`" });
+	    	br = new BufferedReader(new InputStreamReader(p.getInputStream()), 2048);
+
+            String line;
+	    	while ((line = br.readLine()) != null) {
+	    		sb.append(line);
+	    		sb.append("\r\n");
+	    	}
+	    	
+	    	Intent i = new Intent(Intent.ACTION_SEND);
+	    	i.setType("message/rfc822");
+	    	i.putExtra(Intent.EXTRA_EMAIL, new String[]{email});
+	    	i.putExtra(Intent.EXTRA_SUBJECT, "Linphone Logs");
+	    	i.putExtra(Intent.EXTRA_TEXT, sb.toString());
+	    	try {
+	    	    LinphoneActivity.instance().startActivity(Intent.createChooser(i, "Send mail..."));
+	    	} catch (android.content.ActivityNotFoundException ex) {
+	    	}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
 

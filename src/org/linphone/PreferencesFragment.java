@@ -50,6 +50,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
@@ -163,7 +165,6 @@ public class PreferencesFragment extends PreferencesListFragment implements EcCa
 			findPreference(R.string.pref_echo_canceller_calibration_key).setLayoutResource(R.layout.hidden);
 		}
 
-
 		if (getResources().getBoolean(R.bool.disable_all_patented_codecs_for_markets)) {
 			Preference prefH264 = findPreference(R.string.pref_video_codec_h264_key);
 			prefH264.setEnabled(false);
@@ -227,6 +228,28 @@ public class PreferencesFragment extends PreferencesListFragment implements EcCa
 				return true;
 			}
 		});
+		
+		CheckBoxPreference wifiOnly = (CheckBoxPreference) findPreference(R.string.pref_wifi_only_key);
+		wifiOnly.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				boolean isSettingActivated = (Boolean) newValue;
+				
+				ConnectivityManager cm = (ConnectivityManager) LinphoneActivity.instance().getSystemService(Context.CONNECTIVITY_SERVICE);
+				NetworkInfo eventInfo = cm.getActiveNetworkInfo();
+				
+				LinphoneCore lc = LinphoneManager.getLcIfManagerNotDestroyedOrNull();
+				if (eventInfo != null && eventInfo.getTypeName() != null && eventInfo.getTypeName().equals("mobile") && lc != null) {
+					lc.setNetworkReachable(!isSettingActivated);
+				}
+				
+				return true;
+			}
+		});
+		
+		if (getResources().getBoolean(R.bool.disable_every_log)) {
+			uncheckDisableAndHideCheckbox(R.string.pref_debug_key);
+		}
 	}
 	
 	private void createAddAccountButton() {
@@ -234,6 +257,10 @@ public class PreferencesFragment extends PreferencesListFragment implements EcCa
 		addAccount.setTitle(getString(R.string.pref_add_account));
 		addAccount.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 	        public boolean onPreferenceClick(Preference preference) {
+	        	SharedPreferences prefs = getPreferenceManager().getSharedPreferences();
+	    		nbAccounts = prefs.getInt(getString(R.string.pref_extra_accounts), 0);
+	    		prefs.edit().putInt(getString(R.string.pref_extra_accounts), nbAccounts+1).commit();
+	    		
 	        	addExtraAccountPreferencesButton(accounts, nbAccounts, true);
 	        	LinphoneActivity.instance().displayAccountSettings(nbAccounts);
 	        	nbAccounts++;

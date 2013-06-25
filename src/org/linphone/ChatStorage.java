@@ -55,9 +55,23 @@ public class ChatStorage {
 	}
 	
 	public void updateMessageStatus(String to, String message, int status) {
-		ContentValues values = new ContentValues();
-		values.put("status", status);
-		db.update(TABLE_NAME, values, "direction LIKE " + OUTGOING + " AND remoteContact LIKE \"" + to + "\" AND message LIKE \"" + message + "\"", null);
+		String[] whereArgs = { String.valueOf(OUTGOING), to, message };
+		Cursor c = db.query(TABLE_NAME, null, "direction LIKE ? AND remoteContact LIKE ? AND message LIKE ?", whereArgs, null, null, "id DESC");
+
+		String id = null;
+		if (c.moveToFirst()) {
+			try {
+				id = c.getString(c.getColumnIndex("id"));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		c.close();
+		
+		if (id != null && id.length() > 0) {
+			int intID = Integer.parseInt(id);
+			updateMessageStatus(to, intID, status);
+		}
 	}
 	
 	public void updateMessageStatus(String to, int id, int status) {
@@ -67,7 +81,7 @@ public class ChatStorage {
 		db.update(TABLE_NAME, values, "id LIKE " + id, null);
 	}
 	
-	public int saveMessage(String from, String to, String message) {
+	public int saveTextMessage(String from, String to, String message, long time) {
 		ContentValues values = new ContentValues();
 		if (from.equals("")) {
 			values.put("localContact", from);
@@ -83,14 +97,11 @@ public class ChatStorage {
 			values.put("status", LinphoneChatMessage.State.Idle.toInt());
 		}
 		values.put("message", message);
-		values.put("time", System.currentTimeMillis());
+		values.put("time", time);
 		return (int) db.insert(TABLE_NAME, null, values);
 	}
 	
-	public int saveMessage(String from, String to, Bitmap image) {
-		if (image == null)
-			return -1;
-		
+	public int saveImageMessage(String from, String to, Bitmap image, String url, long time) {
 		ContentValues values = new ContentValues();
 		if (from.equals("")) {
 			values.put("localContact", from);
@@ -105,13 +116,28 @@ public class ChatStorage {
 			values.put("read", NOT_READ);
 			values.put("status", LinphoneChatMessage.State.Idle.toInt());
 		}
+		values.put("url", url);
 		
+		if (image != null) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			image.compress(CompressFormat.JPEG, 100, baos);
+			values.put("image", baos.toByteArray());
+		}
+		
+		values.put("time", time);
+		return (int) db.insert(TABLE_NAME, null, values);
+	}
+	
+	public void saveImage(int id, Bitmap image) {
+		if (image == null)
+			return;
+		
+		ContentValues values = new ContentValues();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		image.compress(CompressFormat.JPEG, 100, baos);
 		values.put("image", baos.toByteArray());
 		
-		values.put("time", System.currentTimeMillis());
-		return (int) db.insert(TABLE_NAME, null, values);
+		db.update(TABLE_NAME, values, "id LIKE " + id, null);
 	}
 	
 	public int saveDraft(String to, String message) {
@@ -172,15 +198,18 @@ public class ChatStorage {
 		
 		while (c.moveToNext()) {
 			try {
-				String message, timestamp;
+				String message, timestamp, url;
 				int id = c.getInt(c.getColumnIndex("id"));
 				int direction = c.getInt(c.getColumnIndex("direction"));
 				message = c.getString(c.getColumnIndex("message"));
 				timestamp = c.getString(c.getColumnIndex("time"));
 				int status = c.getInt(c.getColumnIndex("status"));
 				byte[] rawImage = c.getBlob(c.getColumnIndex("image"));
+				int read = c.getInt(c.getColumnIndex("read"));
+				url = c.getString(c.getColumnIndex("url"));
 				
-				ChatMessage chatMessage = new ChatMessage(id, message, rawImage, timestamp, direction == INCOMING, status);
+				ChatMessage chatMessage = new ChatMessage(id, message, rawImage, timestamp, direction == INCOMING, status, read == READ);
+				chatMessage.setUrl(url);
 				chatMessages.add(chatMessage);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -238,11 +267,18 @@ public class ChatStorage {
 	}
 	
 	public int getUnreadMessageCount() {
-		return db.query(TABLE_NAME, null, "read LIKE " + NOT_READ, null, null, null, null).getCount();
+		Cursor c = db.query(TABLE_NAME, null, "read LIKE " + NOT_READ, null, null, null, null);
+		int count = c.getCount();
+		c.close();
+		return count;
+		
 	}
 
 	public int getUnreadMessageCount(String contact) {
-		return db.query(TABLE_NAME, null, "remoteContact LIKE \"" + contact + "\" AND read LIKE " + NOT_READ, null, null, null, null).getCount();
+		Cursor c = db.query(TABLE_NAME, null, "remoteContact LIKE \"" + contact + "\" AND read LIKE " + NOT_READ, null, null, null, null);
+		int count = c.getCount();
+		c.close();
+		return count;
 	}
 
 	public byte[] getRawImageFromMessage(int id) {
@@ -252,7 +288,7 @@ public class ChatStorage {
 		if (c.moveToFirst()) {
 			byte[] rawImage = c.getBlob(c.getColumnIndex("image"));
 			c.close();
-			return rawImage;
+			return (rawImage == null || rawImage.length == 0) ? null : rawImage;
 		}
 
 		c.close();
@@ -261,7 +297,7 @@ public class ChatStorage {
 
 	class ChatHelper extends SQLiteOpenHelper {
 	
-	    private static final int DATABASE_VERSION = 14;
+	    private static final int DATABASE_VERSION = 15;
 	    private static final String DATABASE_NAME = "linphone-android";
 	    
 	    ChatHelper(Context context) {
@@ -270,7 +306,7 @@ public class ChatStorage {
 	
 	    @Override
 	    public void onCreate(SQLiteDatabase db) {
-	        db.execSQL("CREATE TABLE " + TABLE_NAME + " (id INTEGER PRIMARY KEY AUTOINCREMENT, localContact TEXT NOT NULL, remoteContact TEXT NOT NULL, direction INTEGER, message TEXT, image BLOB, time NUMERIC, read INTEGER, status INTEGER);");
+	        db.execSQL("CREATE TABLE " + TABLE_NAME + " (id INTEGER PRIMARY KEY AUTOINCREMENT, localContact TEXT NOT NULL, remoteContact TEXT NOT NULL, direction INTEGER, message TEXT, image BLOB, url TEXT, time NUMERIC, read INTEGER, status INTEGER);");
 	        db.execSQL("CREATE TABLE " + DRAFT_TABLE_NAME + " (id INTEGER PRIMARY KEY AUTOINCREMENT, remoteContact TEXT NOT NULL, message TEXT);");
 	    }
 	

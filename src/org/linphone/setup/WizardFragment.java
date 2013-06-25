@@ -18,17 +18,21 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 import java.net.URL;
+import java.util.regex.Pattern;
 
 import org.linphone.LinphoneManager;
 import org.linphone.LinphoneService;
 import org.linphone.R;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -50,6 +54,7 @@ public class WizardFragment extends Fragment {
 	private boolean usernameOk = false;
 	private boolean passwordOk = false;
 	private boolean emailOk = false;
+	private boolean confirmPasswordOk = false;
 	private ImageView createAccount;
 	private TextView errorMessage;
 	
@@ -66,7 +71,10 @@ public class WizardFragment extends Fragment {
     	passwordConfirm = (EditText) view.findViewById(R.id.setup_password_confirm);
     	
     	ImageView passwordOkIV = (ImageView) view.findViewById(R.id.setup_password_ok);
-    	addXMLRPCPasswordHandler(password, passwordConfirm, passwordOkIV);
+    	addXMLRPCPasswordHandler(password, passwordOkIV);
+    	
+    	ImageView passwordConfirmOkIV = (ImageView) view.findViewById(R.id.setup_confirm_password_ok);
+    	addXMLRPCConfirmPasswordHandler(password, passwordConfirm, passwordConfirmOkIV);
 
     	email = (EditText) view.findViewById(R.id.setup_email);
     	ImageView emailOkIV = (ImageView) view.findViewById(R.id.setup_email_ok);
@@ -82,6 +90,18 @@ public class WizardFragment extends Fragment {
 			}
     	});
     	
+    	if (getResources().getBoolean(R.bool.pre_fill_email_in_wizard)) {
+    		Account[] accounts = AccountManager.get(getActivity()).getAccountsByType("com.google");
+    		
+    	    for (Account account: accounts) {
+    	    	if (isEmailCorrect(account.name)) {
+    	            String possibleEmail = account.name;
+    	        	email.setText(possibleEmail);
+    	        	break;
+    	        }
+    	    }
+    	}
+    	
 		return view;
 	}
 	
@@ -95,7 +115,7 @@ public class WizardFragment extends Fragment {
 				errorMessage.setText(R.string.wizard_server_unavailable);
 				usernameOk = false;
 				icon.setImageResource(R.drawable.wizard_notok);
-				createAccount.setEnabled(usernameOk && passwordOk && emailOk);
+				createAccount.setEnabled(usernameOk && passwordOk && confirmPasswordOk && emailOk);
 			}
 		};
 		
@@ -108,7 +128,7 @@ public class WizardFragment extends Fragment {
     					errorMessage.setText(R.string.wizard_username_unavailable);
     					usernameOk = false;
 						icon.setImageResource(R.drawable.wizard_notok);
-						createAccount.setEnabled(usernameOk && passwordOk && emailOk);
+						createAccount.setEnabled(usernameOk && passwordOk && confirmPasswordOk && emailOk);
 					}
 	    		};
 	    		
@@ -117,7 +137,7 @@ public class WizardFragment extends Fragment {
     					errorMessage.setText("");
     					icon.setImageResource(R.drawable.wizard_ok);
 						usernameOk = true;
-						createAccount.setEnabled(usernameOk && passwordOk && emailOk);
+						createAccount.setEnabled(usernameOk && passwordOk && confirmPasswordOk && emailOk);
 					}
 	    		};
 				
@@ -148,7 +168,8 @@ public class WizardFragment extends Fragment {
 	}
 	
 	private boolean isEmailCorrect(String email) {
-		return email.matches("^[a-z0-9]+([_\\.-][a-z0-9]+)*@([a-z0-9]+([\\.-][a-z0-9]+)*)+\\.[a-z]{2,}$");
+    	Pattern emailPattern = Patterns.EMAIL_ADDRESS;
+    	return emailPattern.matcher(email).matches();
 	}
 	
 	private boolean isPasswordCorrect(String password) {
@@ -253,12 +274,12 @@ public class WizardFragment extends Fragment {
 					errorMessage.setText(R.string.wizard_email_incorrect);
 					icon.setImageResource(R.drawable.wizard_notok);
 				}
-				createAccount.setEnabled(usernameOk && passwordOk && emailOk);
+				createAccount.setEnabled(usernameOk && passwordOk && confirmPasswordOk && emailOk);
 			}
 		});
 	}
 	
-	private void addXMLRPCPasswordHandler(final EditText field1, final EditText field2, final ImageView icon) {
+	private void addXMLRPCPasswordHandler(final EditText field1, final ImageView icon) {
 		TextWatcher passwordListener = new TextWatcher() {
 			public void afterTextChanged(Editable arg0) {
 				
@@ -271,21 +292,51 @@ public class WizardFragment extends Fragment {
 			public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) 
 			{
 				passwordOk = false;
-				if (isPasswordCorrect(field1.getText().toString()) && field1.getText().toString().equals(field2.getText().toString())) {
+				if (isPasswordCorrect(field1.getText().toString())) {
 					passwordOk = true;
 					icon.setImageResource(R.drawable.wizard_ok);
 					errorMessage.setText("");
 				}
 				else {
-					if (isPasswordCorrect(field1.getText().toString())) {
-						errorMessage.setText(R.string.wizard_passwords_unmatched);
-					}
-					else {
-						errorMessage.setText(R.string.wizard_password_incorrect);
-					}
+					errorMessage.setText(R.string.wizard_password_incorrect);
 					icon.setImageResource(R.drawable.wizard_notok);
 				}
-				createAccount.setEnabled(usernameOk && passwordOk && emailOk);
+				createAccount.setEnabled(usernameOk && passwordOk && confirmPasswordOk && emailOk);
+			}
+		};
+		
+		field1.addTextChangedListener(passwordListener);
+	}
+	
+	private void addXMLRPCConfirmPasswordHandler(final EditText field1, final EditText field2, final ImageView icon) {
+		TextWatcher passwordListener = new TextWatcher() {
+			public void afterTextChanged(Editable arg0) {
+				
+			}
+
+			public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
+				
+			}
+
+			public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) 
+			{
+				confirmPasswordOk = false;
+				if (field1.getText().toString().equals(field2.getText().toString())) {
+					confirmPasswordOk = true;
+					icon.setImageResource(R.drawable.wizard_ok);
+
+					if (!isPasswordCorrect(field1.getText().toString())) {
+						errorMessage.setText(R.string.wizard_password_incorrect);
+					}
+					else {
+						errorMessage.setText("");
+					}
+				}
+				else {
+					errorMessage.setText(R.string.wizard_passwords_unmatched);
+					icon.setImageResource(R.drawable.wizard_notok);
+				}
+				createAccount.setEnabled(usernameOk && passwordOk && confirmPasswordOk && emailOk);
 			}
 		};
 		

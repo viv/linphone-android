@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.linphone"
-      android:versionCode="2003" android:versionName="2.0.3" android:installLocation="auto"> 
+      android:versionCode="2110" android:installLocation="auto"> 
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="17"/>
     
     <!-- Permissions for Push Notification -->
@@ -31,6 +31,11 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<!-- Needed to use our own Contact editor -->
 	<uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+	<!-- Needed to route the audio to the bluetooth headset if available -->
+	<uses-permission android:name="android.permission.BLUETOOTH" />
+	<uses-permission android:name="android.permission.BROADCAST_STICKY" />
+	<!-- Needed to pre fill the wizard email field (only if enabled in custom settings) -->
+	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
 	
 	<supports-screens android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true"/>
     
@@ -98,10 +103,20 @@
             </intent-filter>
          </activity>
 
-	    <service android:name="org.linphone.LinphoneService" android:stopWithTask="false"/>
+	    <service android:name="org.linphone.LinphoneService"
+	        android:label="@string/service_name"
+	        android:stopWithTask="false"/>
 	        
 		<receiver android:name="org.linphone.NetworkManager">
 			<intent-filter><action android:name="android.net.conn.CONNECTIVITY_CHANGE"></action></intent-filter>
+		</receiver>
+	
+	    <receiver android:name="org.linphone.BluetoothManager">
+			<intent-filter>
+			    <action android:name="android.bluetooth.device.action.ACL_CONNECTED"/>
+			    <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED"/>
+			    <action android:name="android.bluetooth.adapter.action.CONNECTION_STATE_CHANGED"/>
+		    </intent-filter>
 		</receiver>
 	
 		<receiver android:name="org.linphone.BootReceiver">
@@ -122,6 +137,41 @@
 		</receiver>
 		
 		<service android:name="org.linphone.gcm.GCMService" />
+		
+		<activity android:name="org.linphone.tutorials.TutorialLauncherActivity"
+		    android:theme="@style/NoTitle">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+		
+		<activity android:name="org.linphone.tutorials.TutorialBuddyStatusActivity"
+		    android:theme="@style/NoTitle">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        
+		<activity android:name="org.linphone.tutorials.TutorialChatRoomActivity"
+		    android:theme="@style/NoTitle">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        
+		<activity android:name="org.linphone.tutorials.TutorialHelloWorldActivity"
+		    android:theme="@style/NoTitle">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        
+		<activity android:name="org.linphone.tutorials.TutorialRegistrationActivity"
+		    android:theme="@style/NoTitle">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
 	
 	</application>
 

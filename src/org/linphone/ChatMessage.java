@@ -29,12 +29,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 public class ChatMessage {
 	private String message;
 	private String timestamp;
+	private String url;
 	private boolean incoming;
 	private int status;
 	private int id;
 	private Bitmap image;
+	private boolean isRead;
 	
-	public ChatMessage(int id, String message, byte[] rawImage, String timestamp, boolean incoming, int status) {
+	public ChatMessage(int id, String message, byte[] rawImage, String timestamp, boolean incoming, int status, boolean read) {
 		super();
 		this.id = id;
 		this.message = message;
@@ -42,6 +44,7 @@ public class ChatMessage {
 		this.incoming = incoming;
 		this.status = status;
 		this.image = rawImage != null ? BitmapFactory.decodeByteArray(rawImage, 0, rawImage.length) : null;
+		this.isRead = read;
 	}
 	
 	public int getId() {
@@ -82,5 +85,17 @@ public class ChatMessage {
 
 	public Bitmap getImage() {
 		return image;
+	}
+	
+	public boolean isRead() {
+		return isRead;
+	}
+	
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 }

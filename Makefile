@@ -4,10 +4,14 @@ SDK_PLATFORM_TOOLS_PATH=$(shell dirname `which adb`)
 NUMCPUS=$(shell grep -c '^processor' /proc/cpuinfo || echo "4" )
 TOPDIR=$(shell pwd)
 PATCH_FFMPEG=$(shell cd submodules/externals/ffmpeg && git status | grep neon)
-LINPHONE_VERSION=$(shell cd submodules/linphone && git describe)
+LINPHONE_VERSION=$(shell cd submodules/linphone && git describe --always)
+LINPHONE_ANDROID_DEBUG_VERSION=$(shell git describe --always)
 ANDROID_MOST_RECENT_TARGET=$(shell android list target -c | grep android | tail -n1)
 
-BUILD_X264=0
+NDK_DEBUG=0
+BUILD_UPNP=1
+BUILD_REMOTE_PROVISIONING=1
+BUILD_X264=1
 BUILD_AMRNB=full # 0, light or full
 BUILD_AMRWB=0
 BUILD_GPLV3_ZRTP=0
@@ -17,6 +21,8 @@ BUILD_TUNNEL=0
 BUILD_WEBRTC_AECM=1
 BUILD_FOR_X86=1
 USE_JAVAH=1
+
+NDK_BUILD_OPTIONS=NDK_DEBUG=$(NDK_DEBUG) LINPHONE_VERSION=$(LINPHONE_VERSION) BUILD_UPNP=$(BUILD_UPNP) BUILD_REMOTE_PROVISIONING=$(BUILD_REMOTE_PROVISIONING) BUILD_X264=$(BUILD_X264) BUILD_AMRNB=$(BUILD_AMRNB) BUILD_AMRWB=$(BUILD_AMRWB) BUILD_GPLV3_ZRTP=$(BUILD_GPLV3_ZRTP) BUILD_SILK=$(BUILD_SILK) BUILD_G729=$(BUILD_G729) BUILD_TUNNEL=$(BUILD_TUNNEL) BUILD_WEBRTC_AECM=$(BUILD_WEBRTC_AECM) BUILD_FOR_X86=$(BUILD_FOR_X86) USE_JAVAH=$(USE_JAVAH) -j$(NUMCPUS)
 
 all: update-project prepare-sources generate-apk
 
@@ -86,14 +92,14 @@ prepare-mediastreamer2:
 prepare-sources: prepare-ffmpeg prepare-ilbc prepare-vpx prepare-silk prepare-srtp prepare-mediastreamer2
 
 generate-libs:
-	$(NDK_PATH)/ndk-build LINPHONE_VERSION=$(LINPHONE_VERSION) BUILD_X264=$(BUILD_X264) BUILD_AMRNB=$(BUILD_AMRNB) BUILD_AMRWB=$(BUILD_AMRWB) BUILD_GPLV3_ZRTP=$(BUILD_GPLV3_ZRTP) BUILD_SILK=$(BUILD_SILK) BUILD_G729=$(BUILD_G729) BUILD_TUNNEL=$(BUILD_TUNNEL) BUILD_WEBRTC_AECM=$(BUILD_WEBRTC_AECM) BUILD_FOR_X86=$(BUILD_FOR_X86) USE_JAVAH=$(USE_JAVAH) -j$(NUMCPUS)
+	$(NDK_PATH)/ndk-build $(NDK_BUILD_OPTIONS)
 
 update-project:
 	$(SDK_PATH)/android update project --path . --target $(ANDROID_MOST_RECENT_TARGET)
-	touch default.properties
 
 generate-apk:
 	ant partial-clean
+	echo "version.name=$(LINPHONE_ANDROID_DEBUG_VERSION)" > default.properties
 	ant debug
 
 install-apk:
@@ -101,6 +107,9 @@ install-apk:
 
 release: update-project
 	ant clean
+	echo "What is the version name for the release ?"; \
+    read version; \
+	echo "version.name=$$version" > default.properties
 	ant release
 
 run-linphone:
@@ -114,10 +123,10 @@ run-tests:
 	$(SDK_PATH)/android update test-project --path . -m ../ && \
 	ant debug && \
 	ant installd && \
-	ant test
+	adb shell am instrument -w -e size small org.linphone.test/android.test.InstrumentationTestRunner
 
 clean:
-	$(NDK_PATH)/ndk-build clean
+	$(NDK_PATH)/ndk-build $(NDK_BUILD_OPTIONS) clean
 	ant clean
 
 .PHONY: clean

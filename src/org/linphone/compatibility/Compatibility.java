@@ -34,6 +34,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.preference.Preference;
 import android.view.Display;
@@ -248,10 +249,32 @@ public class Compatibility {
 	
 
 	public static void removeGlobalLayoutListener(ViewTreeObserver viewTreeObserver, OnGlobalLayoutListener keyboardListener) {
-		if (Version.sdkAboveOrEqual(16)) {
+		if (Version.sdkAboveOrEqual(Version.API16_JELLY_BEAN_41)) {
 			ApiSixteenPlus.removeGlobalLayoutListener(viewTreeObserver, keyboardListener);
 		} else {
 			ApiFivePlus.removeGlobalLayoutListener(viewTreeObserver, keyboardListener);
+		}
+	}
+	
+	public static void hideNavigationBar(Activity activity)
+	{
+		if (Version.sdkAboveOrEqual(Version.API14_ICE_CREAM_SANDWICH_40)) {
+			ApiFourteenPlus.hideNavigationBar(activity);
+		}
+	}
+	
+	public static void showNavigationBar(Activity activity)
+	{
+		if (Version.sdkAboveOrEqual(Version.API14_ICE_CREAM_SANDWICH_40)) {
+			ApiFourteenPlus.showNavigationBar(activity);
+		}
+	}
+	
+	public static void setAudioManagerInCallMode(AudioManager manager) {
+		if (Version.sdkAboveOrEqual(Version.API11_HONEYCOMB_30)) {
+			ApiElevenPlus.setAudioManagerInCallMode(manager);
+		} else {
+			ApiFivePlus.setAudioManagerInCallMode(manager);
 		}
 	}
 }
